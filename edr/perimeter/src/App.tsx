@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 
 import { AppSidebar } from "@/components/app-sidebar"
-import { DataTable } from "@/components/data-table"
+import { EventsTable } from "@/components/events-table"
 import { type Event as EDRevent } from "@/components/types"
 
 import {
@@ -9,30 +9,11 @@ import {
   SidebarProvider,
 } from "@/components/ui/sidebar"
 
-import { DetectionsData } from "./components/detections-data"
+import { Detections } from "./components/data/detections"
 
 export default function Page() {
-  const [events, setEvents] = useState<EDRevent[]>([])
   const [suspiciousEvents, setSuspiciousEvents] = useState<EDRevent[]>([])
-  const [detections, setDetections] = useState<EDRevent["detections"]>([])
-
   const [loading, setLoading] = useState(true)
-
-  console.log(events)
-  console.log(detections)
-
-  const fetchEvents = async () => {
-    try {
-      const res = await fetch("http://172.16.189.132:8000/events")
-      const data = await res.json()
-
-      setEvents(data)
-    } catch (err) {
-      console.error("Failed to fetch events:", err)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const fetchSuspiciousEvents = async () => {
     try {
@@ -47,28 +28,12 @@ export default function Page() {
     }
   }
 
-  const fetchDetections = async () => {
-    try {
-      const res = await fetch("http://172.16.189.132:8000/detections")
-      const data = await res.json()
-
-      setDetections(data)
-    } catch (err) {
-      console.error("Failed to fetch detections:", err)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   useEffect(() => {
-    fetchEvents()
     fetchSuspiciousEvents()
-    fetchDetections()
 
     const interval = setInterval(() => {
-      fetchEvents()
       fetchSuspiciousEvents()
-      fetchDetections()
     }, 3000)
 
     return () => clearInterval(interval)
@@ -94,7 +59,7 @@ export default function Page() {
                   Dashboard
                 </div>
 
-                <DetectionsData detections={detections} />
+                <Detections />
               </div>
 
               {loading ? (
@@ -104,20 +69,11 @@ export default function Page() {
               ) : (
                 <>
                   <div className="flex flex-col">
-                    <div className="p-2 text-xs border-y font-semibold">
-                      Suspicious Events
+                    <div className="p-2 text-xs border-b font-semibold">
                     </div>
 
-                    <DataTable data={suspiciousEvents} />
+                    <EventsTable data={suspiciousEvents} />
                   </div>
-
-                  {/* <div className="flex flex-col">
-                    <div className="p-2 text-xs border-y font-semibold">
-                      Recent Events
-                    </div>
-
-                    <DataTable data={events} />
-                  </div> */}
                 </>
               )}
             </div>

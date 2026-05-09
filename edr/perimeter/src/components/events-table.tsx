@@ -270,7 +270,7 @@ function ProcessDrawer({
   )
 }
 
-export function DataTable({ data }: { data: EDRevent[] }) {
+export function EventsTable({ data }: { data: EDRevent[] }) {
   const [selected, setSelected] = React.useState<{
     type: "pid" | "ppid" | "uid" | null
     id: number | null

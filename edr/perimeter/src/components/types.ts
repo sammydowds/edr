@@ -48,4 +48,23 @@ export const schema = z.object({
   ),
 })
 
+export type TimeseriesPoint = {
+  time: string
+  low: number
+  medium: number
+  high: number
+  "Initial Access": number
+  Execution: number
+  Persistence: number
+  "Privilege Escalation": number
+  "Defense Evasion": number
+  "Credential Access": number
+  Discovery: number
+  "Lateral Movement": number
+  Collection: number
+  Exfiltration: number
+  Impact: number
+}
+
+
 export type Event = z.infer<typeof schema>

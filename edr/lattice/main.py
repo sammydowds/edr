@@ -246,41 +246,60 @@ def get_event_timeseries(
 
     bucket_seconds = get_bucket_seconds(interval)
 
+    MITRE_TACTICS = [
+        "Initial Access",
+        "Execution",
+        "Persistence",
+        "Privilege Escalation",
+        "Defense Evasion",
+        "Credential Access",
+        "Discovery",
+        "Lateral Movement",
+        "Collection",
+        "Exfiltration",
+        "Impact",
+    ]
+
     query = f"""
     SELECT
         (CAST(strftime('%s', e.timestamp) AS INTEGER) / {bucket_seconds}) * {bucket_seconds} AS bucket,
 
-        SUM(CASE WHEN LOWER(d.severity) = 'low' THEN 1 ELSE 0 END) AS low_count,
-
-        SUM(CASE WHEN LOWER(d.severity) = 'medium' THEN 1 ELSE 0 END) AS medium_count,
-
-        SUM(CASE WHEN LOWER(d.severity) = 'high' THEN 1 ELSE 0 END) AS high_count
+        LOWER(d.severity) AS severity,
+        d.mitre_tactic AS mitre_tactic
 
     FROM events e
     JOIN detections d
         ON e.id = d.event_id
 
     WHERE e.timestamp >= ?
-
-    GROUP BY bucket
-    ORDER BY bucket ASC
     """
 
-    rows = cursor.execute(
-        query,
-        (start.isoformat(),),
-    ).fetchall()
-
+    rows = cursor.execute(query, (start.isoformat(),)).fetchall()
     conn.close()
 
-    counts = {
-        row["bucket"]: {
-            "low": row["low_count"] or 0,
-            "medium": row["medium_count"] or 0,
-            "high": row["high_count"] or 0,
-        }
-        for row in rows
-    }
+    buckets = {}
+
+    for row in rows:
+        bucket = row["bucket"]
+
+        if bucket not in buckets:
+            buckets[bucket] = {
+                "low": 0,
+                "medium": 0,
+                "high": 0,
+                **{t: 0 for t in MITRE_TACTICS},
+            }
+
+        severity = row["severity"] or "low"
+        tactic = row["mitre_tactic"]
+
+        if severity in ["low", "medium", "high"]:
+            buckets[bucket][severity] += 1
+        else:
+            buckets[bucket]["low"] += 1
+
+        if tactic in MITRE_TACTICS:
+            buckets[bucket][tactic] += 1
 
     results = []
 
@@ -290,17 +309,15 @@ def get_event_timeseries(
     current = (current // bucket_seconds) * bucket_seconds
 
     while current <= end:
-        bucket = counts.get(
+        bucket = buckets.get(
             current,
-            {"low": 0, "medium": 0, "high": 0},
+            {"low": 0, "medium": 0, "high": 0, **{t: 0 for t in MITRE_TACTICS}},
         )
 
         results.append(
             {
                 "time": datetime.utcfromtimestamp(current).isoformat() + "Z",
-                "low": bucket["low"],
-                "medium": bucket["medium"],
-                "high": bucket["high"],
+                **bucket,
             }
         )
 
