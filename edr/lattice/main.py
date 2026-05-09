@@ -67,11 +67,9 @@ def build_event_response(rows):
                     "description": row["detection_description"],
                     "severity": row["detection_severity"],
                     "confidence": row["confidence"],
-                    "mitre": {
-                        "tactic": row["mitre_tactic"],
-                        "technique_id": row["mitre_technique_id"],
-                        "technique_name": row["mitre_technique_name"],
-                    },
+                    "mitre_tactic": row["mitre_tactic"],
+                    "mitre_technique_id": row["mitre_technique_id"],
+                    "mitre_technique_name": row["mitre_technique_name"],
                 }
             )
 
@@ -214,11 +212,6 @@ def get_suspicious_events(
     conn.close()
 
     return build_event_response(rows)
-
-
-# --------------------------------------------------------
-# Detections
-# --------------------------------------------------------
 
 
 @app.get("/detections")
