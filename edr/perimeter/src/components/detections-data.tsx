@@ -24,6 +24,7 @@ import {
 
 import { type Event } from "./types"
 import { DetectionCard } from "./detection-card"
+import { DetectionsGraph } from "./detections-graph"
 
 export const description = "An interactive pie chart"
 
@@ -116,10 +117,6 @@ export function DetectionsData({
     )
   }, [flatDetections, activeSeverity])
 
-  const totalDetections = React.useMemo(() => {
-    return flatDetections.length
-  }, [flatDetections])
-
   const renderPieShape = React.useCallback(
     ({
       index,
@@ -155,116 +152,94 @@ export function DetectionsData({
 
   return (
     <div className="flex flex-col w-full">
-      <div className="flex">
-        <div className="w-[375px] flex items-center border-r">
-          <ChartContainer
-            id={id}
-            config={chartConfig}
-            className="mx-auto aspect-square w-full max-w-[300px]"
-          >
-            <PieChart>
-              <ChartTooltip
-                cursor={false}
-                content={
-                  <ChartTooltipContent hideLabel />
-                }
-              />
+      <div className="flex items-center border-r">
+        <div className="grow min-w-[500px] relative">
+          <DetectionsGraph />
+          <div className="w-[275px] absolute top-0 left-4">
+            <ChartContainer
+              id={id}
+              config={chartConfig}
+              className="mx-auto aspect-square w-full max-w-[300px]"
+            >
+              <PieChart>
+                <ChartTooltip
+                  cursor={false}
+                  content={
+                    <ChartTooltipContent hideLabel />
+                  }
+                />
 
-              <Pie
-                data={chartData}
-                dataKey="total"
-                nameKey="severity"
-                innerRadius={60}
-                strokeWidth={5}
-                shape={renderPieShape}
-              >
-                <Label
-                  content={({ viewBox }) => {
-                    if (
-                      viewBox &&
-                      "cx" in viewBox &&
-                      "cy" in viewBox
-                    ) {
-                      return (
-                        <text
-                          x={viewBox.cx}
-                          y={viewBox.cy}
-                          textAnchor="middle"
-                          dominantBaseline="middle"
-                        >
-                          <tspan
+                <Pie
+                  data={chartData}
+                  dataKey="total"
+                  nameKey="severity"
+                  innerRadius={60}
+                  strokeWidth={5}
+                  shape={renderPieShape}
+                >
+                  <Label
+                    content={({ viewBox }) => {
+                      if (
+                        viewBox &&
+                        "cx" in viewBox &&
+                        "cy" in viewBox
+                      ) {
+                        return (
+                          <text
                             x={viewBox.cx}
                             y={viewBox.cy}
-                            className="fill-foreground text-3xl font-bold"
+                            textAnchor="middle"
+                            dominantBaseline="middle"
                           >
-                            {activeDetections.length}
-                          </tspan>
+                            <tspan
+                              x={viewBox.cx}
+                              y={viewBox.cy}
+                              className="fill-foreground text-3xl font-bold"
+                            >
+                              {activeDetections.length}
+                            </tspan>
 
-                          <tspan
-                            x={viewBox.cx}
-                            y={(viewBox.cy || 0) + 24}
-                            className="fill-muted-foreground"
-                          >
-                            Tactics
-                          </tspan>
-                        </text>
-                      )
-                    }
-                  }}
-                />
-              </Pie>
-            </PieChart>
-          </ChartContainer>
+                            <tspan
+                              x={viewBox.cx}
+                              y={(viewBox.cy || 0) + 24}
+                              className="fill-muted-foreground"
+                            >
+                              Tactics
+                            </tspan>
+                          </text>
+                        )
+                      }
+                    }}
+                  />
+                </Pie>
+              </PieChart>
+            </ChartContainer>
+          </div>
         </div>
 
-        <div className="flex flex-col w-full">
-          <div className="flex justify-end w-full p-2 border-b">
-            <Select
-              value={activeSeverity}
-              onValueChange={setActiveSeverity}
+
+
+      </div>
+
+      <div className="flex flex-col w-full">
+        <div className="flex justify-end w-full p-2 border-b">
+          <Select
+            value={activeSeverity}
+            onValueChange={setActiveSeverity}
+          >
+            <SelectTrigger
+              className="h-7 w-[180px] rounded-lg pl-2.5"
+              aria-label="Select severity"
             >
-              <SelectTrigger
-                className="h-7 w-[180px] rounded-lg pl-2.5"
-                aria-label="Select severity"
-              >
-                <SelectValue placeholder="Select severity" />
-              </SelectTrigger>
+              <SelectValue placeholder="Select severity" />
+            </SelectTrigger>
 
-              <SelectContent
-                align="end"
-                className="rounded-xl"
-              >
-                {severities.map((key) => {
-                  if (key === "all") {
-                    return (
-                      <SelectItem
-                        key={key}
-                        value={key}
-                        className="rounded-lg [&_span]:flex"
-                      >
-                        <div className="flex items-center gap-2 text-xs">
-                          <span
-                            className="flex h-3 w-3 shrink-0 rounded-xs"
-                            style={{
-                              backgroundColor: `var(--color-${key})`,
-                            }}
-                          />
-
-                          All
-                        </div>
-                      </SelectItem>
-                    )
-                  }
-
-                  const config =
-                    chartConfig[
-                    key as keyof typeof chartConfig
-                    ]
-
-                  if (!config) {
-                    return null
-                  }
-
+            <SelectContent
+              align="end"
+              className="rounded-xl"
+            >
+              {severities.map((key) => {
+                if (key === "all") {
                   return (
                     <SelectItem
                       key={key}
@@ -279,28 +254,56 @@ export function DetectionsData({
                           }}
                         />
 
-                        {config.label}
+                        All
                       </div>
                     </SelectItem>
                   )
-                })}
-              </SelectContent>
-            </Select>
-          </div>
+                }
 
-          <div className="flex flex-col divide-y max-h-[320px] overflow-y-auto">
-            {activeDetections.length === 0 ? (
-              <div className="p-4 text-xs text-muted-foreground">
-                No detections
+                const config =
+                  chartConfig[
+                  key as keyof typeof chartConfig
+                  ]
+
+                if (!config) {
+                  return null
+                }
+
+                return (
+                  <SelectItem
+                    key={key}
+                    value={key}
+                    className="rounded-lg [&_span]:flex"
+                  >
+                    <div className="flex items-center gap-2 text-xs">
+                      <span
+                        className="flex h-3 w-3 shrink-0 rounded-xs"
+                        style={{
+                          backgroundColor: `var(--color-${key})`,
+                        }}
+                      />
+
+                      {config.label}
+                    </div>
+                  </SelectItem>
+                )
+              })}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex flex-col divide-y max-h-[320px] overflow-y-auto">
+          {activeDetections.length === 0 ? (
+            <div className="p-4 text-xs text-muted-foreground">
+              No detections
+            </div>
+          ) : (
+            activeDetections.map((d, idx) => (
+              <div id={`detections-${idx}`}>
+                <DetectionCard detection={d} />
               </div>
-            ) : (
-              activeDetections.map((d, idx) => (
-                <div id={`detections-${idx}`}>
-                  <DetectionCard detection={d} />
-                </div>
-              ))
-            )}
-          </div>
+            ))
+          )}
         </div>
       </div>
     </div>
