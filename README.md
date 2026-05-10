@@ -11,7 +11,7 @@ This EDR PoC monitors events at the kernel level and enriches them in user-space
 
 Kernel event data structure can be found in `edr/intercept/kernel/events.h`. Events are published from `tracepoint/syscalls/sys_enter_openat` and `lsm/socket_connect` hooks in the kernel and consumed + enriched by `edr/intercept/user/main.go` in user space.
 
-Detections and events are stored in a sqlite DB, view the schema in `edr/intercept/user/db/schema.sql`. The API layer is in `edr/lattice` where detection and event data is served (including time-series data). The frontend (`perimeter`) consumes data from `lattice` by polling. It includes a bar chart, area chart, and radar chart of tactics happening in real time. Right now, only `suspicious` events are shown in the UI. 
+Detections and events are stored in a sqlite DB, view the schema in `edr/intercept/user/db/schema.sql`. The API layer is in `edr/lattice` where detection and event data is served (including time-series data). The frontend (`perimeter`) consumes data from `lattice` by polling. It includes a pie chart, area chart, and radar chart of tactics happening in real time. Right now, only `suspicious` events are shown in the UI. 
 
 ## Architecture
 
