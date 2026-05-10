@@ -60,7 +60,7 @@ export function DetectionsAreaChart({
       config={chartConfig}
       className="aspect-auto h-[300px] w-full p-2"
     >
-      <AreaChart data={data}>
+      <AreaChart data={data} margin={{ top: 100, left: 0, right: 0, bottom: 0 }}>
         <defs>
           <linearGradient id="fillLow" x1="0" y1="0" x2="0" y2="1">
             <stop
@@ -101,8 +101,6 @@ export function DetectionsAreaChart({
             />
           </linearGradient>
         </defs>
-
-        <CartesianGrid vertical={false} />
 
         <XAxis
           dataKey="time"

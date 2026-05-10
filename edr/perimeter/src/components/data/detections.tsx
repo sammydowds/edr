@@ -102,7 +102,7 @@ export function Detections() {
           </SelectContent>
         </Select>
       </div>
-      <div className="grow">
+      <div className="grow pt-12">
         <DetectionsAreaChart data={data} />
       </div>
     </div>

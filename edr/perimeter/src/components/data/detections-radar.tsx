@@ -15,18 +15,20 @@ interface MitreRadarProps {
   data: TimeseriesPoint[]
 }
 
+// TODO: update with all tactics eventually
 const MITRE_TACTICS = [
-  "Initial Access",
+  // "Initial Access",
   "Execution",
-  "Persistence",
+  // "Persistence",
   "Privilege Escalation",
-  "Defense Evasion",
+  // "Defense Evasion",
   "Credential Access",
   "Discovery",
   "Lateral Movement",
-  "Collection",
-  "Exfiltration",
-  "Impact",
+  // "Collection",
+  "Command and Control",
+  // "Exfiltration",
+  // "Impact",
 ]
 
 export function DetectionsRadar({ data }: MitreRadarProps) {

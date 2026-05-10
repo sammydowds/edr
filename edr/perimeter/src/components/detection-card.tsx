@@ -30,7 +30,6 @@ export const DetectionCard = ({ detection }: DetectionCardProps) => {
             </div>
 
             <div className="text-xs flex items-center gap-1">
-              Tactic:
               <a className="text-xs text-blue-600 underline font-bold" target="_blank" rel="noopener noreferrer" href={`https://attack.mitre.org/techniques/${detection.mitre_technique_id}`}> {detection.mitre_technique_id}: {detection.mitre_technique_name}</a>
             </div>
           </div>
