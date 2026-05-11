@@ -246,19 +246,36 @@ def get_event_timeseries(
 
     bucket_seconds = get_bucket_seconds(interval)
 
-    MITRE_TACTICS = [
-        "Initial Access",
-        "Execution",
-        "Persistence",
-        "Privilege Escalation",
-        "Defense Evasion",
-        "Credential Access",
-        "Discovery",
-        "Lateral Movement",
-        "Collection",
-        "Exfiltration",
-        "Impact",
-    ]
+    RADAR_CATEGORIES = {
+        "Exploiting": [
+            "Initial Access",
+            "Execution",
+            "Privilege Escalation",
+        ],
+        "Persisting": [
+            "Persistence",
+            "Defense Evasion",
+            "Command and Control",
+        ],
+        "Recon": [
+            "Discovery",
+            "Credential Access",
+        ],
+        "Moving": [
+            "Lateral Movement",
+        ],
+        "Destruction": [
+            "Collection",
+            "Exfiltration",
+            "Impact",
+        ],
+    }
+
+    tactic_to_category = {}
+
+    for category, tactics in RADAR_CATEGORIES.items():
+        for tactic in tactics:
+            tactic_to_category[tactic] = category
 
     query = f"""
     SELECT
@@ -275,6 +292,7 @@ def get_event_timeseries(
     """
 
     rows = cursor.execute(query, (start.isoformat(),)).fetchall()
+
     conn.close()
 
     buckets = {}
@@ -287,19 +305,26 @@ def get_event_timeseries(
                 "low": 0,
                 "medium": 0,
                 "high": 0,
-                **{t: 0 for t in MITRE_TACTICS},
+                "Exploiting": 0,
+                "Persisting": 0,
+                "Recon": 0,
+                "Moving": 0,
+                "Destruction": 0,
             }
 
-        severity = row["severity"] or "low"
-        tactic = row["mitre_tactic"]
+        severity = (row["severity"] or "low").lower()
 
         if severity in ["low", "medium", "high"]:
             buckets[bucket][severity] += 1
         else:
             buckets[bucket]["low"] += 1
 
-        if tactic in MITRE_TACTICS:
-            buckets[bucket][tactic] += 1
+        tactic = row["mitre_tactic"]
+
+        category = tactic_to_category.get(tactic)
+
+        if category:
+            buckets[bucket][category] += 1
 
     results = []
 
@@ -308,11 +333,19 @@ def get_event_timeseries(
 
     current = (current // bucket_seconds) * bucket_seconds
 
+    empty_bucket = {
+        "low": 0,
+        "medium": 0,
+        "high": 0,
+        "Exploiting": 0,
+        "Persisting": 0,
+        "Recon": 0,
+        "Moving": 0,
+        "Destruction": 0,
+    }
+
     while current <= end:
-        bucket = buckets.get(
-            current,
-            {"low": 0, "medium": 0, "high": 0, **{t: 0 for t in MITRE_TACTICS}},
-        )
+        bucket = buckets.get(current, empty_bucket.copy())
 
         results.append(
             {

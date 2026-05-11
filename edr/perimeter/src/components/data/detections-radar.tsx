@@ -16,40 +16,35 @@ interface MitreRadarProps {
 }
 
 // TODO: update with all tactics eventually
-const MITRE_TACTICS = [
-  // "Initial Access",
-  "Execution",
-  // "Persistence",
-  "Privilege Escalation",
-  // "Defense Evasion",
-  "Credential Access",
-  "Discovery",
-  "Lateral Movement",
-  // "Collection",
-  "Command and Control",
-  // "Exfiltration",
-  // "Impact",
+const MITRE_CATEGORIES = [
+  "Exploiting",
+  "Persisting",
+  "Recon",
+  "Moving",
+  "Destruction",
 ]
 
 export function DetectionsRadar({ data }: MitreRadarProps) {
   const chartData = React.useMemo(() => {
     const totals: Record<string, number> = {}
 
-    for (const tactic of MITRE_TACTICS) {
+    for (const tactic of MITRE_CATEGORIES) {
       totals[tactic] = 0
     }
 
     for (const point of data) {
-      for (const tactic of MITRE_TACTICS) {
+      for (const tactic of MITRE_CATEGORIES) {
         totals[tactic] += point[tactic] ?? 0
       }
     }
 
-    return MITRE_TACTICS.map((tactic) => ({
+    return MITRE_CATEGORIES.map((tactic) => ({
       tactic,
       value: totals[tactic],
     }))
   }, [data])
+
+  console.log(chartData)
 
   const chartConfig = {
     value: {

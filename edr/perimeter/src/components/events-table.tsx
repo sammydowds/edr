@@ -14,7 +14,6 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Button } from "./ui/button"
-import { cn } from "@/lib/utils"
 import { type Event as EDRevent } from "@/components/types"
 import { AlertTriangle, FishingHook } from "lucide-react"
 import { DetectionCard } from "./detection-card"
@@ -132,7 +131,8 @@ function renderEvent({
               <span className="font-mono">{e.comm}</span>
             </div>
             <div className="flex items-center">
-              <span className="font-mono text-blue-800">{e.filename}</span>
+              {e.filename ? <span className="font-mono text-chart-5">{e.filename}</span> :
+                <span className="font-mono text-chart-5">{e.remote_ip4}:{e.remote_port}</span>}
             </div>
           </div>
           <div className="text-xs flex gap-2 text-muted-foreground">
